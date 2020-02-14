@@ -3,6 +3,21 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Specific files that shouldn't change
+util.py
+textDisplay.py
+mazeGenerator.py
+layout.py
+keyboardAgents.py
+graphicsUtils.py
+graphicsDisplay.py
+game.py
+distanceCalculator.py
+captureGraphicsDisplay.py
+captureAgents.py
+capture.py
+baselineTeam.py
+
 # C extensions
 *.so
 
