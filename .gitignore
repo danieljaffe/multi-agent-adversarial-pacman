@@ -18,6 +18,10 @@ captureAgents.py
 capture.py
 baselineTeam.py
 
+# Pycharm files to ignore
+.idea/
+
+
 # C extensions
 *.so
 
