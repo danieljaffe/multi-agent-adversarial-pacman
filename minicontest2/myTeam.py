@@ -176,12 +176,14 @@ class ReflexAgent(ReflexCaptureAgent):
 
         if action == Directions.STOP: features['stop'] = 1
         rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
-        if action == rev: features['reverse'] = 1
+        if action == rev:
+            features['reverse'] = 1
 
         return features
 
     def getWeights(self, gameState, action):
-        if (True):
+        myState = gameState.getAgentState(self.index)
+        if myState.isPacman:
             return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
                     'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
         return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
