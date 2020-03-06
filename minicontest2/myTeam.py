@@ -35,7 +35,7 @@ from util import nearestPoint
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first='OffensiveReflexAgent', second='DefensiveReflexAgent'):
+               first='ReflexAgent', second='ReflexAgent'):
     """
     This function should return a list of two agents that will form the
     team, initialized using firstIndex and secondIndex as their agent
@@ -132,7 +132,7 @@ class ReflexCaptureAgent(CaptureAgent):
         return {'successorScore': 1.0}
 
 
-class OffensiveReflexAgent(ReflexCaptureAgent):
+class ReflexAgent(ReflexCaptureAgent):
     """
     A reflex agent that seeks food. This is an agent
     we give you to get an idea of what an offensive agent might look like,
@@ -142,45 +142,29 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     def getFeatures(self, gameState, action):
         features = util.Counter()
         successor = self.getSuccessor(gameState, action)
-        foodList = self.getFood(successor).asList()
-        capsuleList = self.getCapsules(successor)
-        features['successorScore'] = -len(foodList) - (2 * len(capsuleList)) # self.getScore(successor)
-
-
-        # Compute distance to the nearest food
-
-        if len(foodList) > 0:  # This should always be True,  but better safe than sorry
-            myPos = successor.getAgentState(self.index).getPosition()
-            minDistanceFood = min([self.getMazeDistance(myPos, food) for food in foodList])
-            features['distanceToFood'] = minDistanceFood
-        if len(capsuleList) > 0:
-            minDistanceCapsule = min([self.getMazeDistance(myPos, capsule) for capsule in capsuleList])
-            features['distanceToCapsule'] = minDistanceCapsule
-
-        return features
-
-    def getWeights(self, gameState, action):
-        return {'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2}
-
-
-class DefensiveReflexAgent(ReflexCaptureAgent):
-    """
-    A reflex agent that keeps its side Pacman-free. Again,
-    this is to give you an idea of what a defensive agent
-    could be like.  It is not the best or only way to make
-    such an agent.
-    """
-
-    def getFeatures(self, gameState, action):
-        features = util.Counter()
-        successor = self.getSuccessor(gameState, action)
-
         myState = successor.getAgentState(self.index)
-        myPos = myState.getPosition()
+        myPos = successor.getAgentState(self.index).getPosition()
 
         # Computes whether we're on defense (1) or offense (0)
         features['onDefense'] = 1
-        if myState.isPacman: features['onDefense'] = 0
+        if myState.isPacman:
+            features['onDefense'] = 0
+
+
+        ## Offensive features ##
+        foodList = self.getFood(successor).asList()
+        capsuleList = self.getCapsules(successor)
+        features['successorScore'] = -len(foodList) - (2 * len(capsuleList)) # self.getScore(successor)
+        # Compute distance to the nearest food and capsules
+        if len(foodList) > 0:  # This should always be True,  but better safe than sorry
+            minDistanceFood = min([self.getMazeDistance(myPos, food) for food in foodList])
+            features['distanceToFood'] = minDistanceFood
+        if len(capsuleList) > 0:  # This should always be True,  but better safe than sorry
+            minDistanceCapsule = min([self.getMazeDistance(myPos, capsule) for capsule in capsuleList])
+            features['distanceToCapsule'] = minDistanceCapsule
+
+
+        ## Defensive features ##
 
         # Computes distance to invaders we can see
         enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
@@ -197,7 +181,48 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def getWeights(self, gameState, action):
-        return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+        if (True):
+            return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
+                    'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+        return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
+                'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+
+
+# class DefensiveReflexAgent(ReflexCaptureAgent):
+#     """
+#     A reflex agent that keeps its side Pacman-free. Again,
+#     this is to give you an idea of what a defensive agent
+#     could be like.  It is not the best or only way to make
+#     such an agent.
+#     """
+#
+#     def getFeatures(self, gameState, action):
+#         features = util.Counter()
+#         successor = self.getSuccessor(gameState, action)
+#
+#         myState = successor.getAgentState(self.index)
+#         myPos = myState.getPosition()
+#
+#         # Computes whether we're on defense (1) or offense (0)
+#         features['onDefense'] = 1
+#         if myState.isPacman: features['onDefense'] = 0
+#
+#         # Computes distance to invaders we can see
+#         enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+#         invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+#         features['numInvaders'] = len(invaders)
+#         if len(invaders) > 0:
+#             dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+#             features['invaderDistance'] = min(dists)
+#
+#         if action == Directions.STOP: features['stop'] = 1
+#         rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
+#         if action == rev: features['reverse'] = 1
+#
+#         return features
+#
+#     def getWeights(self, gameState, action):
+#         return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
 
 
 ########################################################################################################################
