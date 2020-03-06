@@ -140,6 +140,26 @@ class ReflexAgent(ReflexCaptureAgent):
     """
 
     def getFeatures(self, gameState, action):
+        '''
+
+        Features added so far:
+        * onDefence: 1 if the player is a pacman, 0 otherwise
+        * successorScore: (negative value) proportional to the number of food (and capsules) left on the board.
+        * distanceToFood: distance from the closest pellet
+        * aveDistanceToFood: ave distance to all pellets
+        * distanceToCapsule: distance to the nearest capsule
+        * aveDistanceToCapsule: ave distance to all capsules
+        * distanceToEnemy: distance to the nearest enemy
+        * aveDistanceToEnemy: average distance to all enemies
+
+        Plan to add:
+        * respwaning: 1 if the player is in x-coord zero. All maps (as far as I have tested) have a vertical respawn
+          channel along the left and right side of the map, one corresponding to each team. It may be helpful to
+          consider if an enemy has just died, or died recently when deciding if a move should be made, or if an agent
+          should play defensively or offensively.
+
+        * a better system for deciding if a player should be playing defensively or offensively.
+        '''
         features = util.Counter()
         successor = self.getSuccessor(gameState, action)
         myState = successor.getAgentState(self.index)
@@ -154,7 +174,9 @@ class ReflexAgent(ReflexCaptureAgent):
         ## Offensive features ##
         foodList = self.getFood(successor).asList()
         capsuleList = self.getCapsules(successor)
+        opponentList = self.getOpponents(successor)
         features['successorScore'] = -len(foodList) - (2 * len(capsuleList)) # self.getScore(successor)
+
         # Compute distance to the nearest food and capsules
         if len(foodList) > 0:  # This should always be True,  but better safe than sorry
             distList = []
@@ -164,17 +186,51 @@ class ReflexAgent(ReflexCaptureAgent):
                 distList.append(dist)
                 aveDist += dist
 
+            # TODO: Can calculating "aveDist" and "minDist" be done in a helper function?
             aveDist = aveDist / len(foodList) # Calculate the average & minimum distances to food
             minDistanceFood = min(distList)
 
             features['distanceToFood'] = minDistanceFood # Add average & minimum distances to food as features
             features['aveDistanceToFood'] = aveDist
 
+        # Compute distance to the nearest capsules
         if len(capsuleList) > 0:  # This should always be True,  but better safe than sorry
+            distList = []
+            aveDist = 0
+            for capsule in capsuleList:
+                dist = self.getMazeDistance(myPos, capsule)
+                distList.append(dist)
+                aveDist += dist
+
+            aveDist = aveDist / len(capsuleList)  # Calculate the average & minimum distances to capsules
             minDistanceCapsule = min([self.getMazeDistance(myPos, capsule) for capsule in capsuleList])
-            features['distanceToCapsule'] = minDistanceCapsule
 
+            features['distanceToCapsule'] = minDistanceCapsule # Add average & minimum distances to capsules as features
+            features['aveDistanceToCapsule'] = aveDist
 
+        # Compute distance to enemy
+        enemyDistList = []
+        if myState.isPacman:
+            for opponent in opponentList:
+                if gameState.getAgentState(opponent).isPacman:
+                    enemyDistList.append(self.getMazeDistance(myPos, gameState.getAgentPosition(opponent)))
+        # TODO: Remove redundancy between this commented-out code (below) and the "invaderDistance" code below
+        # else:
+        #     for opponent in opponentList:
+        #         if not gameState.getAgentState(opponent).isPacman:
+        #             enemyDist.append(self.getMazeDistance(myPos, gameState.getAgentPosition(opponent)))
+
+        if len(enemyDistList) > 0:
+            aveDist = 0;
+            for dist in enemyDistList:
+                aveDist += dist
+            aveDist = aveDist / len(enemyDistList)
+            minDistanceEnemy = min(enemyDistList)
+
+            features['distanceToEnemy'] = minDistanceEnemy
+            features['aveDistanceToEnemy'] = aveDist
+
+        # TODO: Is this entire "Defensive features" section redundant?
         ## Defensive features ##
 
         # Computes distance to invaders we can see
@@ -195,8 +251,10 @@ class ReflexAgent(ReflexCaptureAgent):
     def getWeights(self, gameState, action):
         myState = gameState.getAgentState(self.index)
         if myState.isPacman:
-            return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1, 'distanceToCapsule': -2,
+            return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1,
+                    'distanceToCapsule': -1, 'aveDistanceToCapsule': -1, 'distanceToEnemy': 1, 'aveDistanceToEnemy': 1,
                     'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+
         return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
                 'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
 
