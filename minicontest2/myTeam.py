@@ -189,6 +189,59 @@ class ReflexAgent(ReflexCaptureAgent):
         return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
                 'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
 
+ # ALPHA BETA PRUNING CODE
+ # def alphabeta(self, gameState, depth, agentIndex, alpha, beta):
+ #        if depth == 0 or gameState.isLose() or gameState.isWin():
+ #            return self.evaluationFunction(gameState)
+ #        if agentIndex == 0:
+ #            best_action = None
+ #            max_score = -math.inf
+ #            for action in gameState.getLegalActions(agentIndex):
+ #                score = self.alphabeta(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1, alpha, beta)
+ #                if score > max_score:
+ #                    max_score = max(max_score, score)
+ #                    best_action = action
+ #                alpha = max(alpha, score)
+ #                if beta < alpha:
+ #                    break
+ #            if depth == self.depth:
+ #                return best_action
+ #            else:
+ #                return max_score
+ #        else:
+ #            final_ghost = agentIndex == gameState.getNumAgents() - 1
+ #            min_score = math.inf
+ #            if final_ghost:
+ #                next_depth = depth - 1
+ #                next_agent = 0
+ #            else:
+ #                next_depth = depth
+ #                next_agent = agentIndex + 1
+ #            scores = []
+ #            legal_actions = gameState.getLegalActions(agentIndex)
+ #            for action in legal_actions:
+ #                score = self.alphabeta(gameState.generateSuccessor(agentIndex, action), next_depth, next_agent, alpha, beta)
+ #                scores.append(score)
+ #                beta = min(beta, score)
+ #                if score < min_score:
+ #                    min_score = min(min_score, score)
+ #                if beta < alpha:
+ #                    break
+ #            return min_score
+ #
+ #    def getAction(self, gameState):
+ #        """
+ #        Returns the expectimax action using self.depth and self.evaluationFunction
+ #
+ #        All ghosts should be modeled as choosing uniformly at random from their
+ #        legal moves.
+ #        """
+ #        "*** YOUR CODE HERE ***"
+ #        # This agent is Pacman
+ #        agentIndex = 0
+ #        local_depth = self.depth
+ #        action = self.alphabeta(gameState, local_depth, agentIndex, -math.inf, math.inf)
+ #        return action
 
 # class DefensiveReflexAgent(ReflexCaptureAgent):
 #     """
