@@ -157,8 +157,19 @@ class ReflexAgent(ReflexCaptureAgent):
         features['successorScore'] = -len(foodList) - (2 * len(capsuleList)) # self.getScore(successor)
         # Compute distance to the nearest food and capsules
         if len(foodList) > 0:  # This should always be True,  but better safe than sorry
-            minDistanceFood = min([self.getMazeDistance(myPos, food) for food in foodList])
-            features['distanceToFood'] = minDistanceFood
+            distList = []
+            aveDist = 0
+            for food in foodList:
+                dist = self.getMazeDistance(myPos, food)
+                distList.append(dist)
+                aveDist += dist
+
+            aveDist = aveDist / len(foodList) # Calculate the average & minimum distances to food
+            minDistanceFood = min(distList)
+
+            features['distanceToFood'] = minDistanceFood # Add average & minimum distances to food as features
+            features['aveDistanceToFood'] = aveDist
+
         if len(capsuleList) > 0:  # This should always be True,  but better safe than sorry
             minDistanceCapsule = min([self.getMazeDistance(myPos, capsule) for capsule in capsuleList])
             features['distanceToCapsule'] = minDistanceCapsule
@@ -184,7 +195,7 @@ class ReflexAgent(ReflexCaptureAgent):
     def getWeights(self, gameState, action):
         myState = gameState.getAgentState(self.index)
         if myState.isPacman:
-            return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
+            return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1, 'distanceToCapsule': -2,
                     'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
         return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
                 'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
