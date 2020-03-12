@@ -114,7 +114,11 @@ class ReflexCaptureAgent(CaptureAgent):
         """
         features = self.getFeatures(gameState, action)
         weights = self.getWeights(gameState, action)
-        return features * weights
+        total = 0
+        for feature in features:
+            if weights[feature]:
+                total += weights[feature] * features[feature]
+        return total
 
     def getFeatures(self, gameState, action):
         """
@@ -175,12 +179,6 @@ class ReflexAgent(ReflexCaptureAgent):
         successor = self.getSuccessor(gameState, action)
         myState = successor.getAgentState(self.index)
         myPos = successor.getAgentState(self.index).getPosition()
-
-        # Computes whether we're on defense (1) or offense (0)
-        features['onDefense'] = 1
-        if myState.isPacman:
-            features['onDefense'] = 0
-
 
         ## Offensive features ##
         foodList = self.getFood(successor).asList()
@@ -263,19 +261,23 @@ class ReflexAgent(ReflexCaptureAgent):
         if action == rev:
             features['reverse'] = 1
 
+        teamList = self.getTeam(successor)
+        features['distanceToFriend'] = self.getMazeDistance(gameState.getAgentPosition(teamList[0]),
+                                                            gameState.getAgentPosition(teamList[1]))
+
         return features
 
     def getWeights(self, gameState, action):
         myState = gameState.getAgentState(self.index)
         # if self.determineRole() == "offense":
         if myState.isPacman:
-            return {'successorScore': 500, 'distanceToFood': -500, 'aveDistanceToFood': -80,
+            return {'successorScore': -5000, 'distanceToFood': -500, 'aveDistanceToFood': -80,
                     'distanceToCapsule': -800, 'aveDistanceToCapsule': -10, 'distanceToEnemy': 1000, 'aveDistanceToEnemy': 90,
-                    'enemyRespawning': 20000, 'stop': -100, 'reverse': -10, 'distanceToFriend': -50}
+                    'enemyRespawning': 20000, 'stop': -100, 'reverse': -10, 'distanceToFriend': -20}
 
         return {'successorScore': -1000, 'distanceToFood': -20, 'aveDistanceToFood': -1,
                 'distanceToCapsule': -50, 'aveDistanceToCapsule': -5, 'distanceToEnemy': -800, 'aveDistanceToEnemy': -80,
-                'enemyRespawning': 10000, 'stop': -100, 'reverse': -20, 'distanceToFriend': -50}
+                'enemyRespawning': 10000, 'stop': -100, 'reverse': -20, 'distanceToFriend': -20}
 
 
 
