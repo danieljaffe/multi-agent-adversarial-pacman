@@ -62,6 +62,7 @@ class ReflexCaptureAgent(CaptureAgent):
     A base class for reflex agents that chooses score-maximizing actions
     """
 
+
     def registerInitialState(self, gameState):
         self.start = gameState.getAgentPosition(self.index)
         CaptureAgent.registerInitialState(self, gameState)
@@ -139,6 +140,16 @@ class ReflexAgent(ReflexCaptureAgent):
     but it is by no means the best or only way to build an offensive agent.
     """
 
+    # def determineRole(self):
+    #
+    #     if self.index <= 1:
+    #         print("OFF")
+    #         return "offense"
+    #     else:
+    #         print("DEF")
+    #         return "defense"
+
+
     def getFeatures(self, gameState, action):
         '''
 
@@ -214,11 +225,18 @@ class ReflexAgent(ReflexCaptureAgent):
             for opponent in opponentList:
                 if gameState.getAgentState(opponent).isPacman:
                     enemyDistList.append(self.getMazeDistance(myPos, gameState.getAgentPosition(opponent)))
+
         # TODO: Remove redundancy between this commented-out code (below) and the "invaderDistance" code below
-        # else:
-        #     for opponent in opponentList:
-        #         if not gameState.getAgentState(opponent).isPacman:
-        #             enemyDist.append(self.getMazeDistance(myPos, gameState.getAgentPosition(opponent)))
+        else:
+            for opponent in opponentList:
+                if not gameState.getAgentState(opponent).isPacman:
+                    enemyDistList.append(self.getMazeDistance(myPos, gameState.getAgentPosition(opponent)))
+
+        # Is the enemy respawning
+        for opponent in opponentList:
+            if (self.red and gameState.getAgentPosition(opponent)[0] == 1) or (
+                    not self.red and gameState.getAgentPosition(opponent)[0] == 32):
+                features['enemyRespawning'] = 1
 
         if len(enemyDistList) > 0:
             aveDist = 0;
@@ -230,16 +248,15 @@ class ReflexAgent(ReflexCaptureAgent):
             features['distanceToEnemy'] = minDistanceEnemy
             features['aveDistanceToEnemy'] = aveDist
 
-        # TODO: Is this entire "Defensive features" section redundant?
-        ## Defensive features ##
+
 
         # Computes distance to invaders we can see
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
-        features['numInvaders'] = len(invaders)
-        if len(invaders) > 0:
-            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
-            features['invaderDistance'] = min(dists)
+        # enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        # invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+        # features['numInvaders'] = len(invaders)
+        # if len(invaders) > 0:
+        #     dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+        #     features['invaderDistance'] = min(dists)
 
         if action == Directions.STOP: features['stop'] = 1
         rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
@@ -250,13 +267,23 @@ class ReflexAgent(ReflexCaptureAgent):
 
     def getWeights(self, gameState, action):
         myState = gameState.getAgentState(self.index)
-        if myState.isPacman:
-            return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1,
+        if self.determineRole() == "offense":
+            return {'onDefense': 0, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1,
                     'distanceToCapsule': -1, 'aveDistanceToCapsule': -1, 'distanceToEnemy': 1, 'aveDistanceToEnemy': 1,
-                    'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+                    'enemyRespawning': 1, 'stop': -100, 'reverse': -2}
 
-        return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
-                'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+        return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1,
+                'distanceToCapsule': -1, 'aveDistanceToCapsule': -1, 'distanceToEnemy': 1, 'aveDistanceToEnemy': 1,
+                'enemyRespawning': 1, 'stop': -100, 'reverse': -2}
+
+
+
+
+
+        # return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'distanceToCapsule': -2,
+        #         'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+
+        # , 'numInvaders': -1000, 'invaderDistance': -10
 
 
 # class DefensiveReflexAgent(ReflexCaptureAgent):
