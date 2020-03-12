@@ -142,7 +142,7 @@ class ReflexAgent(ReflexCaptureAgent):
 
     # def determineRole(self):
     #
-    #     if self.index <= 1:
+    #     if self. <= 1:
     #         print("OFF")
     #         return "offense"
     #     else:
@@ -267,14 +267,15 @@ class ReflexAgent(ReflexCaptureAgent):
 
     def getWeights(self, gameState, action):
         myState = gameState.getAgentState(self.index)
-        if self.determineRole() == "offense":
-            return {'onDefense': 0, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1,
-                    'distanceToCapsule': -1, 'aveDistanceToCapsule': -1, 'distanceToEnemy': 1, 'aveDistanceToEnemy': 1,
-                    'enemyRespawning': 1, 'stop': -100, 'reverse': -2}
+        # if self.determineRole() == "offense":
+        if myState.isPacman:
+            return {'successorScore': 500, 'distanceToFood': -500, 'aveDistanceToFood': -80,
+                    'distanceToCapsule': -800, 'aveDistanceToCapsule': -10, 'distanceToEnemy': 1000, 'aveDistanceToEnemy': 90,
+                    'enemyRespawning': 20000, 'stop': -100, 'reverse': -10, 'distanceToFriend': -50}
 
-        return {'onDefense': 100, 'successorScore': 100, 'distanceToFood': -1, 'aveDistanceToFood': -1,
-                'distanceToCapsule': -1, 'aveDistanceToCapsule': -1, 'distanceToEnemy': 1, 'aveDistanceToEnemy': 1,
-                'enemyRespawning': 1, 'stop': -100, 'reverse': -2}
+        return {'successorScore': -1000, 'distanceToFood': -20, 'aveDistanceToFood': -1,
+                'distanceToCapsule': -50, 'aveDistanceToCapsule': -5, 'distanceToEnemy': -800, 'aveDistanceToEnemy': -80,
+                'enemyRespawning': 10000, 'stop': -100, 'reverse': -20, 'distanceToFriend': -50}
 
 
 
@@ -284,6 +285,22 @@ class ReflexAgent(ReflexCaptureAgent):
         #         'numInvaders': -1000, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
 
         # , 'numInvaders': -1000, 'invaderDistance': -10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # class DefensiveReflexAgent(ReflexCaptureAgent):
